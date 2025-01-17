@@ -47,16 +47,15 @@
         });
         const result = await response.json();
 
-        // Display output
-        if (result.status === "error") {
+        // Display detailed output from the n8n workflow
+        if (result[0]?.output) {
           document.getElementById('output').innerHTML = `
-            <h4 class="text-danger">Validation Errors:</h4>
-            <ul>${result.errors.map(error => `<li>${error}</li>`).join("")}</ul>
+            <h4>Claim Evaluation:</h4>
+            <div style="white-space: pre-wrap;">${result[0].output}</div>
           `;
         } else {
           document.getElementById('output').innerHTML = `
-            <h4>Claim Percentage: ${result.claimPercentage}%</h4>
-            <p>Status: ${result.status}</p>
+            <p class="text-danger">Error: No output received from the workflow.</p>
           `;
         }
       } catch (error) {
