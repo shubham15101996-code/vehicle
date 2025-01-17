@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -9,27 +8,19 @@
 </head>
 <body>
   <div class="container mt-5">
-    <h2>Vehicle Insurance Claim Percentage Calculator</h2>
-    <form id="claimForm" enctype="multipart/form-data">
-      <div class="mb-3">
-        <label for="vehiclePhoto" class="form-label">Vehicle Damaged Photo</label>
-        <input type="file" class="form-control" id="vehiclePhoto" name="vehiclePhoto" required>
-      </div>
-      <div class="mb-3">
-        <label for="policyPDF" class="form-label">Policy PDF</label>
-        <input type="file" class="form-control" id="policyPDF" name="policyPDF" required>
-      </div>
+    <h2 class="mb-4">Vehicle Insurance Claim Percentage Calculator</h2>
+    <form id="claimForm">
       <div class="mb-3">
         <label for="vehicleAge" class="form-label">Vehicle Age (Years)</label>
-        <input type="number" class="form-control" id="vehicleAge" name="vehicleAge" required>
+        <input type="number" class="form-control" id="vehicleAge" name="vehicle_age" placeholder="Enter vehicle age" required>
       </div>
       <div class="mb-3">
-        <label for="vehicleNumber" class="form-label">Vehicle Number</label>
-        <input type="text" class="form-control" id="vehicleNumber" name="vehicleNumber" required>
+        <label for="vehicleNumberPlate" class="form-label">Vehicle Number Plate</label>
+        <input type="text" class="form-control" id="vehicleNumberPlate" name="vehicle_number_plate" placeholder="Enter vehicle number plate" required>
       </div>
       <div class="mb-3">
-        <label for="damageDetails" class="form-label">Damage Details</label>
-        <textarea class="form-control" id="damageDetails" name="damageDetails" rows="3" required></textarea>
+        <label for="damageDescription" class="form-label">Damage Description</label>
+        <textarea class="form-control" id="damageDescription" name="damage_description" rows="3" placeholder="Describe the damage" required></textarea>
       </div>
       <button type="submit" class="btn btn-primary">Submit</button>
     </form>
@@ -38,17 +29,51 @@
 
   <script>
     document.getElementById('claimForm').addEventListener('submit', async (event) => {
-      event.preventDefault();
+      event.preventDefault(); // Prevent default form submission
       const formData = new FormData(event.target);
+
       try {
-        const response = await fetch('https://shubham1510.app.n8n.cloud/webhook-test/d14c79f6-d875-4e12-a081-e528ff0b44ff', { method: 'POST', body: formData });
+        // Send data to n8n webhook
+        const response = await fetch('https://your-n8n-instance/webhook/vehicle-claim', {
+          method: 'POST',
+          body: JSON.stringify({
+            vehicle_age: formData.get('vehicle_age'),
+            vehicle_number_plate: formData.get('vehicle_number_plate'),
+            damage_description: formData.get('damage_description'),
+          }),
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+
         const result = await response.json();
-        document.getElementById('output').innerHTML = `
-          <h4>Claim Percentage: ${result.claimPercentage}%</h4>
-          <p>Status: ${result.status}</p>
-        `;
+
+        // Display the output
+        if (result.status === 'error') {
+          const errorsHtml = result.errors.map(err => `<li>${err}</li>`).join('');
+          document.getElementById('output').innerHTML = `
+            <div class="alert alert-danger">
+              <h5>Validation Failed:</h5>
+              <ul>${errorsHtml}</ul>
+            </div>
+          `;
+        } else {
+          document.getElementById('output').innerHTML = `
+            <div class="alert alert-success">
+              <h5>Claim Processed:</h5>
+              <p>Claim Percentage: ${result.claimPercentage}%</p>
+              <p>Status: ${result.status}</p>
+            </div>
+          `;
+        }
       } catch (error) {
-        document.getElementById('output').innerHTML = '<p class="text-danger">Error: Unable to process the request.</p>';
+        document.getElementById('output').innerHTML = `
+          <div class="alert alert-danger">
+            <h5>Error:</h5>
+            <p>Unable to process the request. Please try again later.</p>
+          </div>
+        `;
+        console.error(error);
       }
     });
   </script>
