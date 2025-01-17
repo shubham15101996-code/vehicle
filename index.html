@@ -47,17 +47,14 @@
         });
         const result = await response.json();
 
-        // Display detailed output from the n8n workflow
-        if (result[0]?.output) {
-          document.getElementById('output').innerHTML = `
-            <h4>Claim Evaluation:</h4>
-            <div style="white-space: pre-wrap;">${result[0].output}</div>
-          `;
-        } else {
-          document.getElementById('output').innerHTML = `
-            <p class="text-danger">Error: No output received from the workflow.</p>
-          `;
-        }
+        // Extract the output field from the last node response
+        const output = result[0]?.output || "No output received.";
+
+        // Display the output in the UI with formatting preserved
+        document.getElementById('output').innerHTML = `
+          <h4>Claim Evaluation:</h4>
+          <div style="white-space: pre-wrap;">${output}</div>
+        `;
       } catch (error) {
         document.getElementById('output').innerHTML = `
           <p class="text-danger">Error: Unable to process the request. Please try again later.</p>
